@@ -27,22 +27,22 @@ class ParcelDAOIntegrationTest {
     }
 
 
-//    @Test
-//    void testFindByStatus() {
-//        Parcel parcel = Parcel.builder()
-//                .trackingNumber("XYZ999")
-//                .senderName("Chris")
-//                .receiverName("David")
-//                .deliveryStatus(DeliveryStatus.IN_TRANSIT)
-//                .updated(LocalDateTime.now())
-//                .build();
-//
-//        parcelDAO.createParcel(parcel);
-//
-//        List<Parcel> results = parcelDAO.findByStatus(DeliveryStatus.IN_TRANSIT);
-//        assertFalse(results.isEmpty());
-//        assertEquals(DeliveryStatus.IN_TRANSIT, results.get(0).getDeliveryStatus());
-//    }
+    @Test
+    void testFindByStatus() {
+        Parcel parcel = Parcel.builder()
+                .trackingNumber("XYZ999")
+                .senderName("Chris")
+                .receiverName("David")
+                .deliveryStatus(DeliveryStatus.IN_TRANSIT)
+                .updated(LocalDateTime.now())
+                .build();
+
+        parcelDAO.createParcel(parcel);
+
+        List<Parcel> results = parcelDAO.findByStatus(DeliveryStatus.IN_TRANSIT);
+        assertFalse(results.isEmpty());
+        assertEquals(DeliveryStatus.IN_TRANSIT, results.get(0).getDeliveryStatus());
+    }
 //
 //    @Test
 //    void testUpdateDeliveryStatus() {
