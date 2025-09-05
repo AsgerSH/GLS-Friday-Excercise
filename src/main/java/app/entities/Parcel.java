@@ -2,8 +2,11 @@ package app.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @ToString
@@ -32,6 +35,11 @@ public class Parcel {
 
     @Column(nullable = false)
     private LocalDateTime updated;
+
+    // 1:m relationer
+    @OneToMany(mappedBy = "parcel", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @Builder.Default
+    private Set<Shipment> shipmentSet = new HashSet<>();
 
     // Kaldes før entiteten er persisteret for første gang
     @PrePersist

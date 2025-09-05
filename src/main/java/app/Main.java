@@ -1,50 +1,69 @@
 package app;
 
 import app.config.HibernateConfig;
-import app.daos.ParcelDAO;
-import app.entities.DeliveryStatus;
-import app.entities.Parcel;
-
+import app.entities.*;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
-        // 1. Get EntityManagerFactory for dev database
         EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
-        ParcelDAO parcelDAO = new ParcelDAO(emf);
+        EntityManager em = emf.createEntityManager();
 
-        // 2. Create a new Parcel
-        Parcel parcel = Parcel.builder()
-                .trackingNumber("TRACK123")
-                .senderName("Alice")
-                .receiverName("Bob")
-                .deliveryStatus(DeliveryStatus.PENDING)
-                .updated(LocalDateTime.now())
-                .build();
+        try {
+            em.getTransaction().begin();
 
-        parcelDAO.createParcel(parcel);
-        System.out.println("Parcel created: " + parcel);
+            // Create locations
+            Location copenhagen = Location.builder()
+                    .Latitude(55.6761)
+                    .Longitude(12.5683)
+                    .Address("Copenhagen, Denmark")
+                    .build();
 
-        // 3. Find by ID
-        Optional<Parcel> foundParcel = parcelDAO.findById((long) parcel.getId());
-        foundParcel.ifPresent(p -> System.out.println("Found parcel: " + p));
+            Location aarhus = Location.builder()
+                    .Latitude(56.1629)
+                    .Longitude(10.2039)
+                    .Address("Aarhus, Denmark")
+                    .build();
 
-        // 4. Update delivery status
-        parcelDAO.updateDeliveryStatus((long) parcel.getId(), DeliveryStatus.IN_TRANSIT);
-        System.out.println("Parcel status updated to IN_TRANSIT");
+            // Create a parcel
+            Parcel parcel = Parcel.builder()
+                    .trackingNumber("TRACK123456")
+                    .senderName("Alice")
+                    .receiverName("Bob")
+                    .deliveryStatus(DeliveryStatus.IN_TRANSIT)
+                    .build();
 
-        // 5. Find by status
-        List<Parcel> inTransitParcels = parcelDAO.findByStatus(DeliveryStatus.IN_TRANSIT);
-        System.out.println("Parcels with IN_TRANSIT status: " + inTransitParcels);
+            // Create a shipment (linking parcel, source, and destination)
+            Shipment shipment = Shipment.builder()
+                    .parcel(parcel)
+                    .source(copenhagen)
+                    .destination(aarhus)
+                    .shipmentDate(LocalDateTime.now())
+                    .build();
 
-        // 6. Delete the parcel
-        boolean deleted = parcelDAO.deleteParcelById((long) parcel.getId());
-        System.out.println("Parcel deleted: " + deleted);
+            // Keep relationships consistent
+            parcel.getShipmentSet().add(shipment);
+            copenhagen.getSourceSet().add(shipment);
+            aarhus.getDestinationSet().add(shipment);
 
-        // 7. Close the EntityManagerFactory
-        emf.close();
+            // Persist everything
+            em.persist(copenhagen);
+            em.persist(aarhus);
+            em.persist(parcel);
+            em.persist(shipment);
+
+            em.getTransaction().commit();
+            System.out.println("✅ Sample data inserted!");
+
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+            emf.close();
+        }
     }
 }

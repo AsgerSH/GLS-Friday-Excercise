@@ -47,7 +47,7 @@ public class ParcelDAO {
     public List<Parcel> findByStatus(DeliveryStatus status) {
         try (EntityManager em = emf.createEntityManager()) {
             return em.createQuery(
-                            "SELECT p FROM Parcel WHERE p.deliveryStatus = :status", Parcel.class)
+                            "SELECT p FROM Parcel p WHERE p.deliveryStatus = :status", Parcel.class)
                     .setParameter("status", status)
                     .getResultList();
         }
