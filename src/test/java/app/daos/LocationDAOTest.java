@@ -2,45 +2,80 @@ package app.daos;
 
 import app.config.HibernateConfig;
 import app.entities.Location;
+import app.populators.LocationPopulator;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LocationDAOTest {
 
-    private static final EntityManagerFactory emf = HibernateConfig.getEntityManagerFactoryForTest();
-    private static final LocationDAO locationDAO = new LocationDAO(emf);
-    private static Location l1;
-    private static Location l2;
+    private static EntityManagerFactory emf;
+    private static LocationDAO locationDAO;
 
+    // Instance-variabler til testobjekterne
+    private Location copenhagen;
+    private Location aarhus;
+
+    @BeforeAll
+    static void setUpAll() {
+        // Sæt Hibernate i testmode og opret EntityManagerFactory
+        HibernateConfig.setTest(true);
+        emf = HibernateConfig.getEntityManagerFactoryForTest();
+        locationDAO = new LocationDAO(emf);
+    }
+
+    // Sletter alt fra tabellerne, samt "populerer" locations, fordi det er dem vi tester
     @BeforeEach
-    void setUp() {
+    void setUpEach() {
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+            em.createQuery("DELETE FROM Shipment").executeUpdate();
+            em.createQuery("DELETE FROM Parcel").executeUpdate();
+            em.createQuery("DELETE FROM Location").executeUpdate();
+            em.getTransaction().commit();
+        }
+
+        Location[] locations = LocationPopulator.populate(locationDAO);
+        copenhagen = locations[0];
+        aarhus = locations[1];
     }
 
-    @AfterEach
-    void tearDown() {
+
+    @AfterAll
+    static void tearDownAll() {
+        if (emf != null) {
+            emf.close();
+        }
     }
 
     @Test
-    void create() {
+    void testGetAll() {
+        List<Location> locations = locationDAO.getAll();
+        assertEquals(2, locations.size()); // Copenhagen + Aarhus
     }
 
     @Test
-    void getAll() {
+    void testGetById() {
+        Location found = locationDAO.getById(copenhagen.getId());
+        assertEquals("Copenhagen, Denmark", found.getAddress());
     }
 
     @Test
-    void getById() {
+    void testUpdate() {
+        copenhagen.setAddress("New Copenhagen Address");
+        locationDAO.update(copenhagen);
+        Location updated = locationDAO.getById(copenhagen.getId());
+        assertEquals("New Copenhagen Address", updated.getAddress());
     }
 
     @Test
-    void update() {
-    }
-
-    @Test
-    void delete() {
+    void testDelete() {
+        boolean deleted = locationDAO.delete(aarhus.getId());
+        assertTrue(deleted);
+        assertNull(locationDAO.getById(aarhus.getId()));
     }
 }

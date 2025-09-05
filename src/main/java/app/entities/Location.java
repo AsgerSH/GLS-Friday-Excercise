@@ -24,6 +24,7 @@ public class Location {
     private Double Longitude;
 
     @Column(nullable = false)
+    @Setter
     private String Address;
 
 
