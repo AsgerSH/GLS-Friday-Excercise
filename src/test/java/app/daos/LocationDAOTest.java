@@ -16,13 +16,11 @@ class LocationDAOTest {
     private static EntityManagerFactory emf;
     private static LocationDAO locationDAO;
 
-    // Instance-variabler til testobjekterne
     private Location copenhagen;
     private Location aarhus;
 
     @BeforeAll
     static void setUpAll() {
-        // Sæt Hibernate i testmode og opret EntityManagerFactory
         HibernateConfig.setTest(true);
         emf = HibernateConfig.getEntityManagerFactoryForTest();
         locationDAO = new LocationDAO(emf);
