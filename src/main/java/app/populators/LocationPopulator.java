@@ -18,7 +18,6 @@ public class LocationPopulator {
                 .Address("Aarhus, Denmark")
                 .build();
 
-        // Gem i DB
         locationDAO.create(copenhagen);
         locationDAO.create(aarhus);
 
