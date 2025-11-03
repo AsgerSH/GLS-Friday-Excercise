@@ -15,7 +15,7 @@ public class LocationPopulator {
         Location aarhus = Location.builder()
                 .Latitude(56.1629)
                 .Longitude(10.2039)
-                .Address("Aarhus, Denmark")
+                .Address("Aarhus, Denmarkk")
                 .build();
 
         locationDAO.create(copenhagen);
